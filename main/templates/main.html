@@ -19,7 +19,7 @@
 <p>Belum ada produk.</p>
 {% else %}
 
-{% for product in products_list %}
+{% for product in product_list %}
 <div>
   <h2><a href="{% url 'main:show_product' product.product_id %}">{{ product.name }}</a></h2>
 
