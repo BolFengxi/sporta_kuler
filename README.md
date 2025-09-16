@@ -59,3 +59,5 @@ Alasan JSON lebih populer : Lebih ringan, native di js, parsing lebih sederhana,
 ![xml](image-2.png)
 ![jsonbyid](image-3.png)
 ![xmlbyid](image-4.png)
+
+WARNING!! There's still an error on database esspecially on the server
