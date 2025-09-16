@@ -1,3 +1,4 @@
+TUGAS 1
 1. Mengimplementasikan checklist step-by-step
     - Mempersiapkan repository baru pada GitHub
     - Menyiapkan virtual environment pada terminal 
@@ -28,3 +29,33 @@ migrate mengaplikasikan perubahan model yang tercantum dalam berkas migrasi ke b
 5. Menurut saya, kerangka kerja django terorganisasi dengan baik dan mudah untuk diinstall dan belajar. Arsitekturnya yang menggunakan MVT melatih pola pikir dalam software engineering.
 
 6. Materi yang diberikan sudah baik dan lengkap.
+
+TUGAS 2
+1. Data delivery memastikan data yang benar, cepat dan aman sampai ke pengguna sehingga platform berguna dan dapat diandalkan
+
+2. Perbedaan JSON dan XML
+JSON : Lebih ringkas, struktur key:value bisa langsung dipetakan ke object, parsing umumnya lebih cepat, cocok untuk API
+XML : Lebih kuat untuk dokumen markup, memiliki fitur-fitur untuk dokumen yang bersifat dokumen, lebih varbose 
+
+Menurut saya lebih baik JSON tapi JSON dan XML tetap memiliki kelebihannya masing-masing
+Alasan JSON lebih populer : Lebih ringan, native di js, parsing lebih sederhana, model datanya cocok untuk API
+
+3. is_valid() adalah method pada instance Form atau ModelForm yang melakukan validasi field, digunakan untuk mencegah data yang tidak valid untuk masuk ke dalam database
+
+4. Fungsi csrf_token adalah mengikat form ke sesi pengguna (atau ke cookie khusus) sehingga server dapat memverifikasi bahwa permintaan POST benar berasal dari halaman yang sah (origin yang benar). Django memeriksa token ini pada setiap request yang berpotensi mengubah state (POST, PUT, DELETE). Jika kita tidak menambahkan csrf_token maka Penyerang dapat memaksa user mengirim request berbahaya (misalnya mengubah data, menghapus resource, melakukan transaksi) dan tindakan yang memerlukan autentikasi bisa dieksekusi tanpa konfirmasi oleh user. Attacker akan memanfaatkan celah dengan cara Membuat halaman eksternal dengan form/action menuju target, otomatis submit via JavaScript untuk metode yang hanya butuh GET/POST sederhana, ini cukup berbahaya. Karena browser otomatis mengirim cookie sesi, server yang tidak mengecek CSRF akan menjalankan aksi.
+
+5. Mengimplementasikan checklist step-by-step
+    - Menambahkan beberapa kategori pada models.py 
+    - Menambahkan views baru pada views.py : show_xml, show_json, show_xml_by_id, show_json_by_id
+    - Menambahkan routing di urls.py ke masing-masing path baru untuk masing-masing view
+    - Membuat templates html pada folder main yaitu untuk menampilkan list produk, add product, dan detail product
+    - Membuat form tambah product dan membuat view untuk create_product
+    - Membuat halaman detail product dan view show_product
+
+6. Feedback untuk asdos, saya masih bingung terkait perbedaan pada data delivery dan bagaimana data dalam bentuk JSON dan XML ini dapat dimanfaatkan dan jika dimaanfaatkan untuk apa
+
+7. Screnshoot 
+![json](image-1.png)
+![xml](image-2.png)
+![jsonbyid](image-3.png)
+![xmlbyid](image-4.png)

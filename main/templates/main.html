@@ -1,6 +1,42 @@
 <h1>Sporta Kuler</h1>
 
-<h5>Name: </h5>
-<p>{{ nama }}<p>
-<h5>Class: </h5>
-<p>{{ class }}</p>
+ <h5>NPM: </h5>
+ <p>{{ npm }}</p>
+
+ <h5>Name:</h5>
+ <p>{{ name }}</p>
+
+ <h5>Class:</h5>
+ <p>{{ class }}</p>
+
+<a href="{% url 'main:create_product' %}">
+  <button>+ Add Product</button>
+</a>
+
+<hr>
+
+{% if not products_list %}
+<p>Belum ada produk.</p>
+{% else %}
+
+{% for product in products_list %}
+<div>
+  <h2><a href="{% url 'main:show_product' product.product_id %}">{{ product.name }}</a></h2>
+
+  <p><b>{{ product.get_category_display }}</b>{% if product.is_featured %} | 
+    <b>Featured</b>{% endif %}</p>
+
+  {% if product.thumbnail %}
+  <img src="{{ product.thumbnail }}" alt="thumbnail" width="150" height="100">
+  <br />
+  {% endif %}
+
+  <p>{{ news.description|truncatewords:25 }}...</p>
+
+  <p><a href="{% url 'main:show_product' product.product_id %}"><button>Read More</button></a></p>
+</div>
+
+<hr>
+{% endfor %}
+
+{% endif %}
