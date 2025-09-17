@@ -13,7 +13,7 @@ class Product(models.Model):
         ('OTHR', 'Other Football Items'),
     ]
     
-    product_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=100)
     price = models.IntegerField(help_text="Price of the product in IDR")
     description = models.TextField()
