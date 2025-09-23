@@ -1,4 +1,4 @@
-TUGAS 1
+TUGAS 2
 1. Mengimplementasikan checklist step-by-step
     - Mempersiapkan repository baru pada GitHub
     - Menyiapkan virtual environment pada terminal 
@@ -30,7 +30,7 @@ migrate mengaplikasikan perubahan model yang tercantum dalam berkas migrasi ke b
 
 6. Materi yang diberikan sudah baik dan lengkap.
 
-TUGAS 2
+TUGAS 3
 1. Data delivery memastikan data yang benar, cepat dan aman sampai ke pengguna sehingga platform berguna dan dapat diandalkan
 
 2. Perbedaan JSON dan XML
@@ -59,3 +59,9 @@ Alasan JSON lebih populer : Lebih ringan, native di js, parsing lebih sederhana,
 ![xml](image-2.png)
 ![jsonbyid](image-3.png)
 ![xmlbyid](image-4.png)
+
+
+TUGAS 4
+1. Mengimplementasikan checklist step-by-step
+    - Implementasi fungsi register, login, dan logout (views.py, urls.py, dan templates)
+    - 
