@@ -63,5 +63,37 @@ Alasan JSON lebih populer : Lebih ringan, native di js, parsing lebih sederhana,
 
 TUGAS 4
 1. Mengimplementasikan checklist step-by-step
-    - Implementasi fungsi register, login, dan logout (views.py, urls.py, dan templates)
-    - 
+    - Membuat fungsi registrasi dengan menggunakan UserCreationForm pada views.py dan membuat template untuk register.
+    - Membuat fungsi login menggunakan AuthenticationForm dan mengatur session agar hanya pengguna yang sudah login bisa mengakses halaman tertentu.
+    - Membuat fungsi logout menggunakan logout(request) dan mengarahkan kembali ke halaman login.
+    - Membuat dua akun pengguna dan menambahkan masing-masing tiga dummy data produk di lokal.
+    - Menghubungkan model Product dengan User menggunakan ForeignKey agar data produk terasosiasi dengan pemiliknya.
+    - Menampilkan detail informasi user yang sedang login (seperti username) di halaman utama.
+    - Menerapkan cookies last_login untuk menyimpan kapan terakhir kali user login, lalu menampilkannya di halaman utama.
+    - Melakukan add-commit-push ke GitHub dan deploy ke PWS.
+2. AuthenticationForm adalah form bawaan Django untuk autentikasi user. Form ini digunakan untuk login dengan username dan password.
+
+    - Kelebihan: Praktis karena sudah terintegrasi dengan sistem auth Django, aman karena otomatis memvalidasi password.
+    - Kekurangan: Kurang fleksibel jika butuh kustomisasi field atau validasi tambahan.
+
+3. Perbedaan autentikasi dan otorisasi
+
+    - Autentikasi: proses memverifikasi identitas pengguna (contoh: login dengan username & password).
+    - Otorisasi: proses memberikan hak akses tertentu pada user setelah autentikasi (contoh: admin boleh tambah produk, user biasa hanya bisa lihat produk).
+    - Django: autentikasi dilakukan dengan AuthenticationForm, session, dan middleware bawaan. Otorisasi dilakukan dengan permissions, groups, dan decorator seperti @login_required atau @permission_required. 
+
+4. Kelebihan dan kekurangan session & cookies dalam menyimpan state
+- Session
+Kelebihan : Lebih aman karena data tidak disimpan di browser, hanya ID session yang dikirim.
+Kekurangan : Membutuhkan server-side storage sehingga menambah beban server.
+
+-Cookies
+Kelebihan : Tidak membebani server karena data disimpan di browser.
+Kekurangan : Lebih rawan diubah user atau dicuri.
+
+5. Apakah cookies aman secara default?
+    Tidak sepenuhnya aman, ada risiko XSS dan session hijacking. Django menangani hal ini dengan:
+    - Menggunakan flag HttpOnly agar cookie tidak bisa diakses lewat JavaScript.
+    - Mendukung Secure flag agar cookie hanya dikirim lewat HTTPS.
+    - Memberikan CSRF Token untuk mencegah serangan CSRF.
+
