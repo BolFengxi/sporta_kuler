@@ -63,7 +63,6 @@ Alasan JSON lebih populer : Lebih ringan, native di js, parsing lebih sederhana,
 
 TUGAS 4
 1. Mengimplementasikan checklist step-by-step
-<<<<<<< HEAD
     - Membuat fungsi registrasi dengan menggunakan UserCreationForm pada views.py dan membuat template untuk register.
     - Membuat fungsi login menggunakan AuthenticationForm dan mengatur session agar hanya pengguna yang sudah login bisa mengakses halaman tertentu.
     - Membuat fungsi logout menggunakan logout(request) dan mengarahkan kembali ke halaman login.
@@ -98,7 +97,3 @@ Kekurangan : Lebih rawan diubah user atau dicuri.
     - Mendukung Secure flag agar cookie hanya dikirim lewat HTTPS.
     - Memberikan CSRF Token untuk mencegah serangan CSRF.
 
-=======
-    - Implementasi fungsi register, login, dan logout (views.py, urls.py, dan templates)
-    - 
->>>>>>> 4805b6342a6be04aa304934ff46dc08fae4841e1
