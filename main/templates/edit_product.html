@@ -1,6 +1,8 @@
 {% extends 'base.html' %}
+{% load static %}
+
 {% block meta %}
-<title>Create Product - Football Store</title>
+<title>Edit Product - Football News</title>
 {% endblock meta %}
 
 {% block content %}
@@ -15,11 +17,11 @@
       </a>
     </div>
 
-    <!-- Card Form -->
-    <div class="bg-white shadow-xl rounded-2xl border border-[#B3E5FC] p-8 form-style">
+    <!-- Card -->
+    <div class="bg-white shadow-lg rounded-2xl border border-[#B3E5FC] p-8 form-style">
       <div class="mb-8 text-center">
-        <h1 class="text-3xl font-extrabold text-[#1E88E5]">Add New Product</h1>
-        <p class="text-[#90CAF9] mt-2">Fill in the details below to add your football product</p>
+        <h1 class="text-3xl font-extrabold text-[#1E88E5]">Edit Product</h1>
+        <p class="text-[#42A5F5] mt-2">Update your product details below</p>
       </div>
       
       <!-- Form -->
@@ -50,8 +52,8 @@
             Cancel
           </a>
           <button type="submit" 
-                  class="order-1 sm:order-2 flex-1 bg-gradient-to-r from-[#42A5F5] to-[#1E88E5] text-white px-6 py-3 rounded-lg font-semibold shadow-md hover:opacity-90 transition">
-            Add Product
+                  class="order-1 sm:order-2 flex-1 bg-[#1E88E5] text-white px-6 py-3 rounded-lg font-semibold shadow-md hover:bg-[#42A5F5] transition">
+            Save Changes
           </button>
         </div>
       </form>

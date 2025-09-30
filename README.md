@@ -97,3 +97,38 @@ Kekurangan : Lebih rawan diubah user atau dicuri.
     - Mendukung Secure flag agar cookie hanya dikirim lewat HTTPS.
     - Memberikan CSRF Token untuk mencegah serangan CSRF.
 
+TUGAS 5
+1. Jika terdapat beberapa CSS selector untuk suatu elemen HTML, urutan prioritasnya ditentukan oleh spesifisitas selector. Urutannya: inline style > ID selector > class/attribute/pseudo-class selector > element/tag/pseudo-element selector. Jika spesifisitas sama, maka selector yang ditulis terakhir di CSS akan diterapkan.
+
+2. Responsive design penting agar tampilan web tetap optimal di berbagai ukuran layar (desktop, tablet, mobile). Contoh aplikasi yang sudah menerapkan: Instagram (tampilan menyesuaikan layar). Contoh yang belum: situs lama dengan layout tetap, sehingga sulit digunakan di ponsel. Responsive design meningkatkan pengalaman pengguna dan aksesibilitas.
+
+3. Margin adalah jarak luar elemen ke elemen lain, border adalah garis tepi elemen, padding adalah jarak antara border dan isi elemen.
+
+Implementasi CSS biasa:
+```css
+.box {
+    margin: 10px;
+    border: 2px solid black;
+    padding: 8px;
+}
+```
+
+Contoh implementasi pada HTML dengan Tailwind CSS:
+```html
+<div class="m-2 border-2 border-black p-2">
+  Konten di sini
+</div>
+```
+Pada contoh di atas:
+- `m-2` untuk margin,
+- `border-2 border-black` untuk border,
+- `p-2` untuk padding.
+
+4. Flexbox adalah layout model untuk mengatur elemen dalam satu dimensi (baris/kolom) secara fleksibel, cocok untuk navbar, card, dsb. Grid layout adalah model dua dimensi untuk membuat layout kompleks dengan baris dan kolom, cocok untuk galeri atau dashboard. Keduanya memudahkan pembuatan layout responsif dan terstruktur.
+
+5. Mengimplementasikan checklist step-by-step
+- Menambahkan fungsi untuk menghapus dan mengedit product dengan cara pada views.py menambahkan edit_product dan delete_product, menambahkan edit_product pada template serta manambahkan path edit dan delete di urls.py
+- Dengan menggunakan tailwind saya melakukan kustomisasi desgin, awalnya pada base.html menambahkan tailwind, lalu untuk setiap template yang ada melakukan kustomisasi design dan menambahkan suatu navbar.
+- Menambahkan jika tidak ada produk untuk ditampilkan ada gambar dan pesan productnya belum ada
+- Nambah card untuk show tiap productnya
+- Membuat navbar yang responsif serta merespon perbedaan device, jika mobile pakai hamburger
