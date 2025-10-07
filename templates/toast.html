@@ -1,0 +1,60 @@
+{% load static %}
+
+<!-- Toast Container -->
+<div id="toast-container" class="fixed bottom-6 right-6 z-50 flex flex-col gap-3"></div>
+
+<script>
+function showToast(title, message, type = 'info') {
+  const container = document.getElementById('toast-container');
+
+  // Create toast element
+  const toast = document.createElement('div');
+  toast.className = `
+    flex items-center gap-4 p-4 min-w-[300px] max-w-sm rounded-xl shadow-lg
+    transition-all duration-500 transform translate-y-4 opacity-0
+    ${type === 'success' ? 'bg-green-100 border border-green-300' :
+      type === 'error' ? 'bg-red-100 border border-red-300' :
+      type === 'warning' ? 'bg-yellow-100 border border-yellow-300' :
+      'bg-blue-100 border border-blue-300'}
+  `;
+
+  // Icon
+  const iconHTML =
+    type === 'success'
+      ? `<div class="flex items-center justify-center w-8 h-8 bg-green-500 text-white rounded-full text-lg">✔</div>`
+      : type === 'error'
+      ? `<div class="flex items-center justify-center w-8 h-8 bg-red-500 text-white rounded-full text-lg">!</div>`
+      : type === 'warning'
+      ? `<div class="flex items-center justify-center w-8 h-8 bg-yellow-500 text-white rounded-full text-lg">!</div>`
+      : `<div class="flex items-center justify-center w-8 h-8 bg-blue-500 text-white rounded-full text-lg">i</div>`;
+
+  // Inner content
+  toast.innerHTML = `
+    ${iconHTML}
+    <div class="flex-1">
+      <h3 class="font-semibold text-gray-900 text-sm">${title}</h3>
+      <p class="text-gray-700 text-sm">${message}</p>
+    </div>
+    <button class="text-gray-400 hover:text-gray-600 font-bold text-xl leading-none">&times;</button>
+  `;
+
+  // Close button
+  toast.querySelector('button').addEventListener('click', () => hideToast(toast));
+
+  // Add to DOM
+  container.appendChild(toast);
+
+  // Animate in
+  setTimeout(() => {
+    toast.classList.remove('translate-y-4', 'opacity-0');
+  }, 50);
+
+  // Auto-hide after 4 seconds
+  setTimeout(() => hideToast(toast), 4000);
+}
+
+function hideToast(toast) {
+  toast.classList.add('translate-y-4', 'opacity-0');
+  setTimeout(() => toast.remove(), 500);
+}
+</script>

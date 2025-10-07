@@ -132,3 +132,118 @@ Pada contoh di atas:
 - Menambahkan jika tidak ada produk untuk ditampilkan ada gambar dan pesan productnya belum ada
 - Nambah card untuk show tiap productnya
 - Membuat navbar yang responsif serta merespon perbedaan device, jika mobile pakai hamburger
+
+TUGAS 6
+1. Mengimplementasikan checklist step-by-step
+- Mengubah seluruh fitur CRUD product menjadi berbasis AJAX (Fetch API + JSON)
+    - Membuat endpoint Django yang mengembalikan JsonResponse untuk operasi Create / Read / Update / Delete.
+    - Pada server (views.py): memproses form validasi (use ProductsForm) dan mengembalikan JSON berisi { success: true, message: "...", data: {...} } atau { success: false, errors: {...} }.
+    - Pada client (JS): menggunakan fetch() dengan method: "POST" untuk create/update/delete, mengirim FormData dan header X-Requested-With: "XMLHttpRequest" serta X-CSRFToken (atau menggunakan cookie CSRF).
+    - Tidak lagi menggunakan render penuh (render(...)) untuk hasil CRUD — render hanya dipakai untuk menampilkan template utama; semua interaksi CRUD dilakukan AJAX + DOM update.
+
+- Mengubah Login dan Register menggunakan AJAX
+    - Login/register view tetap menggunakan AuthenticationForm / UserCreationForm server-side untuk validasi.
+    - Jika request AJAX: view mengembalikan JsonResponse (success / errors). Jika non-AJAX: tetap bisa berfungsi normal (degradasi).
+    - Frontend: form login/register menangani submit JS, memanggil fetch() lalu menampilkan pesan di halaman dan memicu toast, serta redirect jika login berhasil.
+
+- Tampilan baru
+    - Modal untuk create & update product (form dimasukkan ke dalam modal). Modal membuka form via DOM (innerHTML) atau mem-fetch partial HTML via AJAX.
+    - Modal konfirmasi untuk delete (confirm modal). Pada confirm -> lakukan AJAX delete.
+    - Tombol refresh yang memanggil endpoint JSON untuk load ulang list product tanpa reload halaman.
+    - States: Loading, Empty, Error dibuat dan di-toggle melalui JS berdasarkan hasil fetch/response.
+    - Toast notifications dibuat (kustom design) dan dipanggil untuk event: create, update, delete, login, logout, register.
+
+- Modal & refresh & live update
+    - Create / Update form berada di modal; setelah submit sukses:
+    - Tutup modal (hideModal()),
+    - Tampilkan toast (success),
+    - Dispatch custom event productAdded / productUpdated sehingga main.html mendengarkan dan memanggil ulang fetchProductsFromServer() untuk me-refresh list.
+    - Delete menggunakan modal konfirmasi; setelah konfirmasi => AJAX delete => dispatch productDeleted event (atau langsung refresh list).
+    - Tombol “Refresh” memanggil ulang fetchProductsFromServer() tanpa reload page.
+
+- Loading, Empty, Error state via JS
+    - displayPageSection({ showLoading, showError, showEmpty, showGrid }) untuk kontrol UI.
+    - Saat fetching, tampilkan loading spinner; jika data kosong tampilkan empty state; jika error tampilkan error panel.
+
+- Toast
+    - Toast kustom (HTML+CSS+JS) yang memiliki icon, title, message, progress-bar, close button.
+    - Dipanggil dengan showToast(title, message, type) atau wrapper callShowToast() yang menunggu showToast tersedia.
+    - Menampilkan toasts berbeda untuk tiap aksi (create: success hijau, update: info/blue, delete: warning/kuning, login/register: success/error sesuai hasil).
+
+2. AuthenticationForm adalah form bawaan Django untuk autentikasi user
+
+- AuthenticationForm adalah form built-in Django yang mem-validasi username & password dan menyediakan helper untuk mendapatkan user yang terautentikasi (mis. form.get_user()).
+
+- Kelebihan:
+    - Praktis karena sudah terintegrasi dengan backend auth Django.
+    - Aman: otomatis memvalidasi password menggunakan backend yang disetel, mendukung hashing password, tidak perlu menulis validasi manual.
+
+- Kekurangan:
+    - Kurang fleksibel untuk kebutuhan kustom yang sangat spesifik (mis. field tambahan, login via email + phone, reCAPTCHA, dsb.) — walau masih bisa di-extend.
+
+3. Perbedaan synchronous request dan asynchronous request
+- Synchronous request (sinkron):
+    - Browser mengirim request dan “menunggu” response; selama itu UI biasanya terblokir atau berpindah ke halaman baru (full page reload).
+    - Contoh: form submit biasa yang mengakibatkan render() balik ke template baru.
+
+- Asynchronous request (AJAX):
+    - Browser mengirim request tanpa memblokir UI; hasil diproses di background dan DOM diubah dengan JS tanpa reload.
+    - Contoh: fetch() yang mengembalikan JSON dan kemudian JS meng-update bagian halaman.
+
+- Perbedaan utama:
+    - UX: AJAX lebih halus (tidak reload), sinkron mengganggu alur pengguna.
+    - Performance: AJAX bisa hemat bandwidth (mengambil JSON + fragment), sinkron sering meminta seluruh halaman kembali.
+    - Complexity: AJAX membutuhkan lebih banyak kode client-side (JS), sinkron lebih sederhana karena server-side render.
+
+4. Bagaimana AJAX bekerja di Django (alur request–response)
+
+- Client (browser): trigger (klik tombol, submit form) -> JS membuat fetch() atau XMLHttpRequest.
+- Request: JS mengirim request ke URL Django (mis. /product/add/), sering dengan header X-Requested-With: XMLHttpRequest dan menyertakan token CSRF.
+- Server (Django view):
+    - Menerima request, melakukan autentikasi/authorization (jika perlu).
+    - Memproses request.POST / request.FILES menggunakan form (ProductsForm, AuthenticationForm, dsb.).
+    - Jika request adalah AJAX (client meng-set header), view mengembalikan JsonResponse berisi { success: true/false, message, errors, data }.
+    - Jika bukan AJAX — view dapat merender template HTML biasa atau redirect (backward compatibility).
+- Client:
+    - Menerima response JSON, JS mem-parsing response.json().
+    - Berdasarkan success atau errors, JS memperbarui DOM: menampilkan toast, menutup modal, atau menampilkan error message di form.
+    - Jika action mengubah data (create/update/delete), JS dapat mem-dispatch custom event (mis. productAdded) supaya komponen lain (list/grid) tahu untuk refresh data.
+- Secara opsional: client memanggil endpoint list JSON (mis. /products/json/) untuk menampilkan list terbaru tanpa reload.
+
+5. Apa keuntungan menggunakan AJAX dibandingkan render biasa di Django?
+- User Experience lebih baik: halaman tidak reload, transisi terasa cepat & mulus.
+- Hemat bandwidth: hanya transfer data (JSON) atau fragment HTML, bukan seluruh halaman.
+- Interaktivitas: bisa menampilkan loading/inline-validation/toast tanpa interrupt page.
+- Real-time feel: memungkinkan partial updates, polling, atau push updates (websocket) lebih mudah terintegrasi.
+- Fleksibilitas UI: front-end dapat mengatur DOM persis sesuai keinginan tanpa menggantung pada server-side templates
+
+
+6. Bagaimana cara memastikan keamanan saat menggunakan AJAX untuk fitur Login dan Register di Django?
+- Gunakan CSRF Token:
+    - Saat mengirim POST lewat AJAX, sertakan CSRF token. Cara umum: ambil token dari cookie (csrftoken) dan set header X-CSRFToken.
+    - Atau ambil dari <input type="hidden" name="csrfmiddlewaretoken"> dan kirimkan sebagai field pada FormData.
+- Selalu validasi server-side:
+    - Jangan hanya mengandalkan validasi di client. Gunakan AuthenticationForm / UserCreationForm untuk validasi di view.
+    - Kembalikan error terperinci sebagai JSON bila invalid.
+- Gunakan HTTPS:
+    - Pastikan situs berjalan di HTTPS agar cookie dan credentials tidak bocor.
+- Set cookie flags:
+    - SESSION_COOKIE_SECURE = True (hanya dikirim di HTTPS), SESSION_COOKIE_HTTPONLY = True (tidak dapat diakses oleh JS), CSRF_COOKIE_SECURE, CSRF_COOKIE_HTTPONLY (sesuaikan).
+- Proteksi brute-force:
+    - Batasi percobaan login (rate-limiting), gunakan throttle atau third-party libs seperti django-axes.
+- Gunakan built-in auth methods:
+    - Gunakan django.contrib.auth.authenticate() dan login() untuk session management.
+- Validasi input ekstra:
+    - Untuk register: periksa kekuatan password (Django password validators), konfirmasi password, cek uniqueness username/email.
+- Tidak menampilkan informasi sensitif:
+    - Jangan memberikan pesan yang mengungkapkan apakah username ada atau tidak (sesuaikan kebijakan UX/security).
+- Escape/serialize data:
+    - Ketika menampilkan data dari server ke DOM, gunakan textContent atau sanitasi untuk menghindari XSS jika memasukkan user-generated content.
+
+7. Bagaimana AJAX mempengaruhi pengalaman pengguna (User Experience) pada website?
+- Lebih responsif: aksi terasa cepat karena tidak perlu reload seluruh halaman.
+- Lebih interaktif: bisa menampilkan feedback instan (loading spinner, inline validation, toast).
+- Lebih modern & polished: UX terlihat seperti SPA (Single Page App) pada beberapa bagian.
+- Konsistensi state: pengguna tetap berada di satu halaman — navigasi lebih lancar.
+- Risiko: jika tidak di-handle baik, bisa terjadi inconsistent UI (mis. data stale) — solusinya polling, event dispatch, atau update after actions.
+- Aksesibilitas: perlu perhatian (focus management, aria-live untuk notifikasi) agar pengguna screen reader tetap tahu perubahan.

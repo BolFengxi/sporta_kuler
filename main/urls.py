@@ -12,6 +12,7 @@ from main.views import (
     register,
     edit_product,
     delete_product,
+    add_product_entry_ajax,
 )
 
 app_name = 'main'
@@ -29,4 +30,6 @@ urlpatterns = [
     path('logout/', logout_user, name='logout'),
     path('product/<uuid:product_id>', edit_product, name='edit_product'),
     path('news/<uuid:product_id>/delete', delete_product, name='delete_product'),
+    path('create-product-ajax', add_product_entry_ajax, name='add_product_entry_ajax'),
+
 ]

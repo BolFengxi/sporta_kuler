@@ -22,8 +22,11 @@
         <p class="text-[#90CAF9] mt-2">Fill in the details below to add your football product</p>
       </div>
       
+      <!-- AJAX Messages -->
+      <div id="ajax-messages" class="mb-6 space-y-2"></div>
+
       <!-- Form -->
-      <form method="POST" class="space-y-6">
+      <form id="create-product-form" method="POST" action="" class="space-y-6">
         {% csrf_token %}
         {% for field in form %}
           <div>
@@ -49,7 +52,7 @@
              class="order-2 sm:order-1 px-6 py-3 rounded-lg bg-[#B3E5FC] text-[#1E88E5] font-semibold hover:bg-[#90CAF9] transition-colors text-center">
             Cancel
           </a>
-          <button type="submit" 
+          <button type="submit" id="submit-btn"
                   class="order-1 sm:order-2 flex-1 bg-gradient-to-r from-[#42A5F5] to-[#1E88E5] text-white px-6 py-3 rounded-lg font-semibold shadow-md hover:opacity-90 transition">
             Add Product
           </button>
@@ -58,4 +61,137 @@
     </div>
   </div>
 </div>
+
+<!-- AJAX Script -->
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const form = document.getElementById("create-product-form");
+  const messagesDiv = document.getElementById("ajax-messages");
+  const submitBtn = document.getElementById("submit-btn");
+
+  // Helper: safely call showToast even if toast.js is loaded after this script.
+  function callShowToast(title, message, type = "info") {
+    // If showToast is available, call immediately
+    if (typeof window.showToast === "function") {
+      try {
+        window.showToast(title, message, type);
+      } catch (err) {
+        // do not break flow if toast throws
+        console.error("showToast error:", err);
+      }
+      return;
+    }
+
+    // Otherwise poll for a short time until it's available
+    let tries = 0;
+    const maxTries = 40; // ~2 seconds (40 * 50ms)
+    const iv = setInterval(() => {
+      tries++;
+      if (typeof window.showToast === "function") {
+        clearInterval(iv);
+        try {
+          window.showToast(title, message, type);
+        } catch (err) {
+          console.error("showToast error after wait:", err);
+        }
+      } else if (tries >= maxTries) {
+        clearInterval(iv);
+        // fallback: optionally log or ignore
+        console.warn("showToast not available after waiting; skipping toast.");
+      }
+    }, 50);
+  }
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    messagesDiv.innerHTML = "";
+    submitBtn.disabled = true;
+    submitBtn.innerText = "Submitting...";
+
+    const formData = new FormData(form);
+
+    try {
+      const response = await fetch(form.action, {
+        method: "POST",
+        body: formData,
+        headers: {
+          "X-Requested-With": "XMLHttpRequest"
+        }
+      });
+
+      // try parse JSON; server should return JSON for AJAX requests
+      const data = await response.json();
+
+      if (data.success) {
+        messagesDiv.innerHTML = `
+          <div class="px-4 py-3 rounded text-sm border bg-green-50 border-green-200 text-green-700 shadow-sm">
+            ${data.message}
+          </div>`;
+        form.reset();
+
+        // show toast (non-blocking)
+        callShowToast("Product Added", data.message || "Product created successfully!", "success");
+
+        // dispatch event so other pages/components can refresh (main.html listens for this)
+        try {
+          document.dispatchEvent(new CustomEvent('productAdded'));
+        } catch (err) {
+          // ignore if dispatch fails
+          console.error("dispatch productAdded failed:", err);
+        }
+
+        // redirect after short delay to give user time to see toast
+        setTimeout(() => {
+          window.location.href = data.redirect_url || "{% url 'main:show_main' %}";
+        }, 1200);
+
+      } else {
+        let errorHtml = "";
+        let firstErrorMessage = null;
+
+        if (data.errors) {
+          for (const [field, errors] of Object.entries(data.errors)) {
+            const joined = errors.join(", ");
+            if (!firstErrorMessage) firstErrorMessage = `${field}: ${joined}`;
+            errorHtml += `
+              <div class="px-4 py-3 rounded text-sm border bg-red-50 border-red-200 text-red-700 shadow-sm">
+                <strong>${field}:</strong> ${joined}
+              </div>`;
+          }
+        } else if (data.message) {
+          firstErrorMessage = data.message;
+          errorHtml += `
+            <div class="px-4 py-3 rounded text-sm border bg-red-50 border-red-200 text-red-700 shadow-sm">
+              ${data.message}
+            </div>`;
+        } else {
+          firstErrorMessage = "Failed to create product. Please check the form.";
+          errorHtml += `
+            <div class="px-4 py-3 rounded text-sm border bg-red-50 border-red-200 text-red-700 shadow-sm">
+              ${firstErrorMessage}
+            </div>`;
+        }
+
+        messagesDiv.innerHTML = errorHtml;
+
+        // show toast error using first error message (if exists)
+        callShowToast("Create Failed", firstErrorMessage || "Please check your input.", "error");
+      }
+
+    } catch (err) {
+      console.error("Unexpected error submitting form:", err);
+      messagesDiv.innerHTML = `
+        <div class="px-4 py-3 rounded text-sm border bg-red-50 border-red-200 text-red-700 shadow-sm">
+          An unexpected error occurred. Please try again.
+        </div>`;
+
+      // show toast for unexpected error
+      callShowToast("Unexpected Error", "An unexpected error occurred. Please try again.", "error");
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.innerText = "Add Product";
+    }
+  });
+});
+</script>
 {% endblock %}

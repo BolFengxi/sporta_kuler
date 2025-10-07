@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block meta %}
-<title>Register - Football News</title>
+<title>Register - SportaKuler</title>
 {% endblock meta %}
 
 {% block content %}
@@ -9,110 +9,113 @@
   <div class="min-h-screen bg-[#E1F5FE] flex items-center justify-center p-8">
     <div class="max-w-md w-full relative z-10">
       <div class="bg-white border border-[#B3E5FC] rounded-lg p-8 shadow-sm">
-      <div class="text-center mb-8">
-        <h2 class="text-2xl font-semibold text-gray-900 mb-2">Join Us</h2>
-        <p class="text-gray-500">Create your SportaKuler account</p>
-      </div>
-
-      <!-- Form Errors Display -->
-      {% if form.non_field_errors %}
-        <div class="mb-6">
-          {% for error in form.non_field_errors %}
-            <div class="px-4 py-3 rounded text-sm border bg-red-50 border-red-200 text-red-700">
-              {{ error }}
-            </div>
-          {% endfor %}
-        </div>
-      {% endif %}
-
-      {% if form.errors %}
-        <div class="mb-6">
-          {% for field, errors in form.errors.items %}
-            {% if field != '__all__' %}
-              {% for error in errors %}
-                <div class="px-4 py-3 rounded text-sm border bg-red-50 border-red-200 text-red-700 mb-2">
-                  <strong>{{ field|title }}:</strong> {{ error }}
-                </div>
-              {% endfor %}
-            {% endif %}
-          {% endfor %}
-        </div>
-      {% endif %}
-
-      <form method="POST" action="" class="space-y-5">
-        {% csrf_token %}
-        
-        <div>
-          <label for="username" class="block text-sm font-medium text-gray-700 mb-2">Username</label>
-          <input 
-            id="username" 
-            name="username" 
-            type="text" 
-            required 
-            class="w-full px-4 py-3 border border-[#90CAF9] rounded focus:outline-none focus:border-[#1E88E5] focus:ring-2 focus:ring-[#42A5F5] transition duration-200" 
-            placeholder="Choose a username">
+        <div class="text-center mb-8">
+          <h2 class="text-2xl font-semibold text-gray-900 mb-2">Join Us</h2>
+          <p class="text-gray-500">Create your SportaKuler account</p>
         </div>
 
-        <div>
-          <label for="password1" class="block text-sm font-medium text-gray-700 mb-2">Password</label>
-          <input 
-            id="password1" 
-            name="password1" 
-            type="password" 
-            required 
-            class="w-full px-4 py-3 border border-[#90CAF9] rounded focus:outline-none focus:border-[#1E88E5] focus:ring-2 focus:ring-[#42A5F5] transition duration-200" 
-            placeholder="Create a password">
+        <form id="register-form" method="POST" action="{% url 'main:register' %}" class="space-y-5">
+          {% csrf_token %}
+          
+          <div>
+            <label for="username" class="block text-sm font-medium text-gray-700 mb-2">Username</label>
+            <input 
+              id="username" 
+              name="username" 
+              type="text" 
+              required 
+              class="w-full px-4 py-3 border border-[#90CAF9] rounded focus:outline-none focus:border-[#1E88E5] focus:ring-2 focus:ring-[#42A5F5] transition duration-200" 
+              placeholder="Choose a username">
+          </div>
+
+          <div>
+            <label for="password1" class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+            <input 
+              id="password1" 
+              name="password1" 
+              type="password" 
+              required 
+              class="w-full px-4 py-3 border border-[#90CAF9] rounded focus:outline-none focus:border-[#1E88E5] focus:ring-2 focus:ring-[#42A5F5] transition duration-200" 
+              placeholder="Create a password">
+          </div>
+
+          <div>
+            <label for="password2" class="block text-sm font-medium text-gray-700 mb-2">Confirm Password</label>
+            <input 
+              id="password2" 
+              name="password2" 
+              type="password" 
+              required 
+              class="w-full px-4 py-3 border border-[#90CAF9] rounded focus:outline-none focus:border-[#1E88E5] focus:ring-2 focus:ring-[#42A5F5] transition duration-200" 
+              placeholder="Confirm your password">
+          </div>
+
+          <button 
+            type="submit" 
+            id="submit-btn"
+            class="w-full bg-[#1E88E5] text-white font-medium py-3 px-4 rounded hover:bg-[#1565C0] focus:outline-none focus:ring-2 focus:ring-[#42A5F5] focus:ring-offset-2 transition duration-200">
+            Create Account
+          </button>
+        </form>
+
+        <div class="mt-6 text-center">
+          <p class="text-gray-500 text-sm">
+            Already have an account? 
+            <a href="{% url 'main:login' %}" class="text-[#1E88E5] hover:text-[#1565C0] font-medium">
+              Sign In
+            </a>
+          </p>
         </div>
-
-        <div>
-          <label for="password2" class="block text-sm font-medium text-gray-700 mb-2">Confirm Password</label>
-          <input 
-            id="password2" 
-            name="password2" 
-            type="password" 
-            required 
-            class="w-full px-4 py-3 border border-[#90CAF9] rounded focus:outline-none focus:border-[#1E88E5] focus:ring-2 focus:ring-[#42A5F5] transition duration-200" 
-            placeholder="Confirm your password">
-        </div>
-
-        <button 
-          type="submit" 
-          class="w-full bg-[#1E88E5] text-white font-medium py-3 px-4 rounded hover:bg-[#1565C0] focus:outline-none focus:ring-2 focus:ring-[#42A5F5] focus:ring-offset-2 transition duration-200">
-          Create Account
-        </button>
-      </form>
-
-      <!-- Messages Display -->
-      {% if messages %}
-        <div class="mt-6">
-          {% for message in messages %}
-            <div 
-              class="
-                px-4 py-3 rounded text-sm border
-                {% if message.tags == 'success' %}
-                  bg-[#E1F5FE] border-[#B3E5FC] text-[#1E88E5]
-                {% elif message.tags == 'error' %}
-                  bg-red-50 border-red-200 text-red-700
-                {% else %}
-                  bg-gray-50 border-gray-200 text-gray-700
-                {% endif %}
-              ">
-              {{ message }}
-            </div>
-          {% endfor %}
-        </div>
-      {% endif %}
-
-      <div class="mt-6 text-center">
-        <p class="text-gray-500 text-sm">
-          Already have an account? 
-          <a href="{% url 'main:login' %}" class="text-[#1E88E5] hover:text-[#1565C0] font-medium">
-            Sign In
-          </a>
-        </p>
-      </div>
       </div>
     </div>
   </div>
 </div>
+
+<!-- AJAX + Toast Integration -->
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const form = document.getElementById("register-form");
+  const submitBtn = document.getElementById("submit-btn");
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    submitBtn.disabled = true;
+    submitBtn.innerText = "Creating...";
+
+    const formData = new FormData(form);
+
+    try {
+      const response = await fetch(form.action, {
+        method: "POST",
+        body: formData,
+        headers: { "X-Requested-With": "XMLHttpRequest" },
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        showToast("Registration Successful", data.message || "Your account has been created.", "success");
+        setTimeout(() => {
+          window.location.href = data.redirect_url || "{% url 'main:login' %}";
+        }, 1200);
+      } else {
+        if (data.errors) {
+          for (const [field, errors] of Object.entries(data.errors)) {
+            showToast("Error in " + field, errors.join(", "), "error");
+          }
+        } else if (data.message) {
+          showToast("Registration Failed", data.message, "error");
+        } else {
+          showToast("Registration Failed", "Please check your input and try again.", "error");
+        }
+      }
+    } catch (err) {
+      showToast("Unexpected Error", "Something went wrong. Please try again.", "error");
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.innerText = "Create Account";
+    }
+  });
+});
+</script>
 {% endblock content %}

@@ -15,27 +15,54 @@
       <h1 class="text-3xl font-bold text-[#1E88E5] mb-2">Our Latest Products</h1>
       <p class="text-[#42A5F5]">Discover top-rated and trending products curated for you</p>
     </div>
+    <!-- Button to open modal -->
+<button onclick="showModal()" 
+        class="px-6 py-3 rounded-lg bg-gradient-to-r from-[#42A5F5] to-[#1E88E5] text-white font-semibold shadow-md hover:opacity-90 transition-all duration-200 mb-6">
+  + Add New Product (AJAX)
+</button>
 
-    <!-- Filter Section -->
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 bg-white rounded-lg border border-[#B3E5FC] p-4 shadow-sm">
-      <div class="flex space-x-3 mb-4 sm:mb-0">
-        <a href="?" class="{% if request.GET.filter == 'all' or not request.GET.filter  %} bg-[#1E88E5] text-white{% else %}bg-white text-[#1E88E5] border border-[#42A5F5]{% endif %} px-4 py-2 rounded-md font-medium transition-colors hover:bg-[#42A5F5] hover:text-white">
-          All Products
-        </a>
-        <a href="?filter=my" class="{% if request.GET.filter == 'my' %} bg-[#1E88E5] text-white{% else %}bg-white text-[#1E88E5] border border-[#42A5F5]{% endif %} px-4 py-2 rounded-md font-medium transition-colors hover:bg-[#42A5F5] hover:text-white">
-          My Products
-        </a>
-      </div>
-      {% if user.is_authenticated %}
-        <div class="text-sm text-[#42A5F5]">
-          Last login: {{ last_login }}
-        </div>
-      {% endif %}
+
+<!-- Filter Section -->
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 bg-white rounded-lg border border-[#B3E5FC] p-4 shadow-sm">
+  <div class="flex space-x-3 mb-4 sm:mb-0">
+    <a id="filter-all"
+       href="?filter=all"
+       class="bg-white text-[#1E88E5] border border-[#42A5F5] px-4 py-2 rounded-md font-medium transition-colors hover:bg-[#42A5F5] hover:text-white">
+      All Products
+    </a>
+
+    <a id="filter-my"
+       href="?filter=my"
+       class="bg-white text-[#1E88E5] border border-[#42A5F5] px-4 py-2 rounded-md font-medium transition-colors hover:bg-[#42A5F5] hover:text-white">
+      My Products
+    </a>
+  </div>
+
+  {% if user.is_authenticated %}
+    <div class="text-sm text-[#42A5F5]">
+      Last login: {{ last_login }}
+    </div>
+  {% endif %}
+</div>
+
+
+    <!-- Loading State -->
+    <div id="loading" class="bg-white rounded-lg border border-gray-200 p-12 text-center hidden">
+      <svg class="animate-spin h-8 w-8 text-green-600 inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+      </svg>
+      <p class="text-gray-600 mt-3">Loading Product...</p>
     </div>
 
-    <!-- Product Grid -->
-    {% if not products_list %}
-      <div class="bg-white rounded-lg border border-[#B3E5FC] p-12 text-center shadow-sm">
+    <!-- Error State -->
+    <div id="error" class="hidden"></div>
+
+    <!-- News Grid -->
+    <div id="grid" class="hidden"></div>
+
+    <!-- Empty State-->
+  <div id ="empty" class="bg-white rounded-lg border border-[#B3E5FC] p-12 text-center shadow-sm">
         <div class="w-32 h-32 mx-auto mb-4">
           <img src="{% static 'image/no-product.png' %}" alt="No products available" class="w-full h-full object-contain">
         </div>
@@ -45,13 +72,306 @@
           Add Product
         </a>
       </div>
-    {% else %}
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {% for product in products_list %}
-          {% include 'card_product.html' with product=product %}
-        {% endfor %}
-      </div>
-    {% endif %}
   </div>
 </div>
+
+
+<script>
+// =====================
+// Configuration
+// =====================
+const PRODUCTS_API_ENDPOINT = "{% url 'main:show_json' %}";
+const CURRENT_USER_ID = "{{ user.id|default_if_none:'' }}";
+
+// =====================
+// DOM Elements
+// =====================
+const loadingSpinner = document.getElementById('loading');
+const errorMessage = document.getElementById('error');
+const emptyStateDisplay = document.getElementById('empty');
+const productGridContainer = document.getElementById('grid');
+const showAllProductButton = document.getElementById('filter-all');
+const showMyProductButton = document.getElementById('filter-my');
+
+// =====================
+// State Variables
+// =====================
+let activeFilter = 'all';
+let allProductsData = [];
+
+// =====================
+// Toast helper (safe call)
+// waits briefly if toast.js is loaded after this script
+// =====================
+function callShowToast(title, message, type = "info") {
+  if (typeof window.showToast === "function") {
+    try { window.showToast(title, message, type); } catch (err) { console.error("showToast error:", err); }
+    return;
+  }
+  let tries = 0;
+  const maxTries = 40; // 40 * 50ms = 2s
+  const iv = setInterval(() => {
+    tries++;
+    if (typeof window.showToast === "function") {
+      clearInterval(iv);
+      try { window.showToast(title, message, type); } catch (err) { console.error("showToast error after wait:", err); }
+    } else if (tries >= maxTries) {
+      clearInterval(iv);
+      console.warn("showToast not available after waiting; skipping toast.");
+    }
+  }, 50);
+}
+
+// =====================
+// Utility: Toggle Button Styles
+// =====================
+function setButtonActive(button) {
+  if (!button) return;
+  button.className =
+    'bg-[#1E88E5] text-white px-4 py-2 rounded-md font-medium transition-colors hover:bg-[#42A5F5] hover:text-white';
+}
+
+function setButtonInactive(button) {
+  if (!button) return;
+  button.className =
+    'bg-white text-[#1E88E5] border border-[#42A5F5] px-4 py-2 rounded-md font-medium transition-colors hover:bg-[#42A5F5] hover:text-white';
+}
+
+function updateFilterButtonsAppearance() {
+  if (activeFilter === 'all') {
+    setButtonActive(showAllProductButton);
+    setButtonInactive(showMyProductButton);
+  } else {
+    setButtonActive(showMyProductButton);
+    setButtonInactive(showAllProductButton);
+  }
+}
+
+// =====================
+// UI Display Helpers
+// =====================
+function displayPageSection({ showLoading = false, showError = false, showEmpty = false, showGrid = false }) {
+  if (loadingSpinner) loadingSpinner.classList.toggle('hidden', !showLoading);
+  if (errorMessage) errorMessage.classList.toggle('hidden', !showError);
+  if (emptyStateDisplay) emptyStateDisplay.classList.toggle('hidden', !showEmpty);
+  if (productGridContainer) productGridContainer.classList.toggle('hidden', !showGrid);
+
+  if (showGrid && productGridContainer) {
+    productGridContainer.className = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6';
+  }
+}
+
+// =====================
+// Helpers
+// =====================
+function getReadableCategoryName(categoryCode) {
+  const categoryMapping = {
+    ball: 'Ball',
+    boot: 'Football Boots',
+    kit: 'Kits & Jerseys',
+    equipment: 'Equipment',
+    accessories: 'Accessories',
+    other: 'Other Football Items',
+  };
+  return categoryMapping[categoryCode] || categoryCode;
+}
+
+// =====================
+// Build Product Card
+// =====================
+function buildProductCardElement(productItem) {
+  const articleElement = document.createElement('article');
+  articleElement.className =
+    'bg-white rounded-lg border border-gray-200 hover:shadow-lg transition-shadow duration-300 overflow-hidden flex flex-col h-full';
+
+  const detailLink = `{% url 'main:show_product' '00000000-0000-0000-0000-000000000000' %}`.replace(
+    '00000000-0000-0000-0000-000000000000',
+    productItem.product_id
+  );
+  const editLink = `{% url 'main:edit_product' '00000000-0000-0000-0000-000000000000' %}`.replace(
+    '00000000-0000-0000-0000-000000000000',
+    productItem.product_id
+  );
+  const deleteLink = `{% url 'main:delete_product' '00000000-0000-0000-0000-000000000000' %}`.replace(
+    '00000000-0000-0000-0000-000000000000',
+    productItem.product_id
+  );
+
+  const formattedDate = productItem.created_at
+    ? new Date(productItem.created_at).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+      })
+    : '';
+
+  const categoryLabel = getReadableCategoryName(productItem.category);
+  const isFeatured = !!productItem.is_featured;
+
+  const thumbnailHtml = productItem.thumbnail
+    ? `<img src="${productItem.thumbnail}" alt="${productItem.title}" class="w-full h-full object-cover">`
+    : `<div class="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center"></div>`;
+
+  const featuredBadge = isFeatured
+    ? `<span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-yellow-100 text-yellow-800">Featured</span>`
+    : '';
+
+  const editDeleteButtons =
+    CURRENT_USER_ID && Number(CURRENT_USER_ID) === Number(productItem.user_id)
+      ? `<div class="flex space-x-2">
+           <a href="${editLink}" class="text-gray-600 hover:text-gray-700 text-sm transition-colors product-edit-link">Edit</a>
+           <a href="${deleteLink}" class="text-red-600 hover:text-red-700 text-sm transition-colors product-delete-link">Delete</a>
+         </div>`
+      : '';
+
+  const completeCardHtml = `
+    <div class="aspect-[16/9] relative overflow-hidden">
+      ${thumbnailHtml}
+      <div class="absolute top-3 left-3">
+        <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-[#1E88E5] text-white">${categoryLabel}</span>
+      </div>
+      <div class="absolute top-3 right-3 flex space-x-2">
+        ${featuredBadge}
+      </div>
+    </div>
+    <div class="p-5 flex flex-col flex-1">
+      <div class="flex items-center text-sm text-gray-500 mb-3">
+        <time>${formattedDate}</time>
+      </div>
+      <h3 class="text-lg font-semibold text-gray-900 mb-3 line-clamp-2 leading-tight">
+        <a href="${detailLink}" class="hover:text-[#1E88E5] transition-colors">${productItem.name}</a>
+      </h3>
+      <p class="text-gray-600 text-sm leading-relaxed line-clamp-3 mb-4">${productItem.description || ''}</p>
+      <div class="pt-4 border-t border-gray-100 flex items-center justify-between">
+        <a href="${detailLink}" class="text-[#1E88E5] hover:text-[#42A5F5] font-medium text-sm transition-colors">View</a>
+        ${editDeleteButtons}
+      </div>
+    </div>
+  `;
+
+  articleElement.innerHTML = completeCardHtml;
+  return articleElement;
+}
+
+// =====================
+// Render Product Grid
+// =====================
+function renderAllProductCards(productItems) {
+  if (!productGridContainer) return;
+  productGridContainer.innerHTML = '';
+  productItems.forEach(item => {
+    const cardElement = buildProductCardElement(item);
+    productGridContainer.appendChild(cardElement);
+  });
+}
+
+// =====================
+// Filter & Display Products
+// =====================
+function filterAndDisplayProducts() {
+  updateFilterButtonsAppearance();
+
+  const filtered =
+    activeFilter === 'all'
+      ? allProductsData
+      : allProductsData.filter(p => Number(p.user_id) === Number(CURRENT_USER_ID));
+
+  if (!filtered || filtered.length === 0) {
+    displayPageSection({ showEmpty: true });
+  } else {
+    renderAllProductCards(filtered);
+    displayPageSection({ showGrid: true });
+  }
+}
+
+// =====================
+// Fetch Data (AJAX)
+// =====================
+async function fetchProductsFromServer() {
+  try {
+    displayPageSection({ showLoading: true });
+
+    const response = await fetch(PRODUCTS_API_ENDPOINT, {
+      headers: { Accept: 'application/json' },
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch product data from server');
+    }
+
+    const data = await response.json();
+    allProductsData = data || [];
+    filterAndDisplayProducts();
+    // optional: you can uncomment the next line to show toast on successful load
+    // callShowToast("Loaded", "Products loaded successfully.", "success");
+  } catch (err) {
+    console.error('Error loading products:', err);
+    if (errorMessage) {
+      errorMessage.innerHTML = `<div class="bg-red-50 border border-red-200 text-red-700 p-4 rounded">${err.message}</div>`;
+    }
+    // show toast on error
+    callShowToast("Failed to load products", "Please check your connection and try again.", "error");
+    displayPageSection({ showError: true });
+  }
+}
+
+// =====================
+// Event Handlers
+// =====================
+function handleShowAllClick(event) {
+  event.preventDefault();
+  activeFilter = 'all';
+  filterAndDisplayProducts();
+}
+
+function handleShowMyClick(event) {
+  event.preventDefault();
+  activeFilter = 'my';
+  filterAndDisplayProducts();
+}
+
+// =====================
+// Add event delegation for Edit/Delete to show quick toasts
+// =====================
+if (productGridContainer) {
+  productGridContainer.addEventListener('click', (e) => {
+    const editLink = e.target.closest('a.product-edit-link');
+    const deleteLink = e.target.closest('a.product-delete-link');
+
+    if (deleteLink) {
+      // user clicked delete; show immediate toast (confirm still runs)
+      callShowToast("Deleting...", "Deleting product — you will be redirected.", "warning");
+      // allow normal navigation/confirm behavior
+      return;
+    }
+
+    if (editLink) {
+      callShowToast("Opening editor", "Redirecting to edit page...", "info");
+      // allow normal navigation
+      return;
+    }
+  });
+}
+
+// =====================
+// Initialize Page
+// =====================
+function initializeProductPage() {
+  if (showAllProductButton) showAllProductButton.addEventListener('click', handleShowAllClick);
+  if (showMyProductButton) showMyProductButton.addEventListener('click', handleShowMyClick);
+  fetchProductsFromServer();
+}
+
+// Start
+initializeProductPage();
+
+// Add event listener to detect new products (from AJAX create)
+document.addEventListener('productAdded', function() {
+    // Refresh data without page reload
+    fetchProductsFromServer();
+    // show toast informing user
+    callShowToast("Product added", "Your product was added successfully.", "success");
+});
+</script>
+
 {% endblock content %}
