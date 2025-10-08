@@ -21,6 +21,10 @@
   + Add New Product (AJAX)
 </button>
 
+  <button id="refresh-products"
+          class="px-6 py-3 rounded-lg bg-white border border-[#42A5F5] text-[#1E88E5] font-semibold shadow-md hover:bg-[#E3F2FD] transition-all duration-200">
+    🔄
+  </button>
 
 <!-- Filter Section -->
 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 bg-white rounded-lg border border-[#B3E5FC] p-4 shadow-sm">
@@ -372,6 +376,14 @@ document.addEventListener('productAdded', function() {
     // show toast informing user
     callShowToast("Product added", "Your product was added successfully.", "success");
 });
+
+const refreshButton = document.getElementById('refresh-products');
+if (refreshButton) {
+  refreshButton.addEventListener('click', () => {
+    callShowToast("Refreshing...", "Fetching the latest products...", "info");
+    fetchProductsFromServer();
+  });
+}
 </script>
 
 {% endblock content %}
