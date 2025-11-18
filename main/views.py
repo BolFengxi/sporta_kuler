@@ -1,3 +1,4 @@
+import json
 from django.shortcuts import render, redirect, get_object_or_404
 from main.models import Product
 from main.forms import ProductsForm
@@ -13,8 +14,79 @@ from django.http import HttpResponseRedirect, JsonResponse
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
+import requests
+from django.utils.html import strip_tags
+
     
 # Create your views here.
+
+@csrf_exempt
+def create_product_flutter(request):
+    """
+    Membuat objek Product baru dari data yang dikirim oleh aplikasi Flutter.
+    """
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            
+            # --- Ambil dan Bersihkan Data ---
+            name = strip_tags(data.get("name", "")) 
+            description = strip_tags(data.get("description", ""))
+            
+            # Ambil price, konversi ke integer. Gunakan 0 jika tidak ada atau bukan angka.
+            try:
+                price = int(data.get("price", 0)) 
+            except ValueError:
+                price = 0
+            
+            thumbnail = data.get("thumbnail", "") # URLField, tidak perlu strip_tags
+            category = data.get("category", "OTHR") # Gunakan default 'OTHR'
+            is_featured = data.get("is_featured", False) # Nilai boolean
+            
+            # Asumsi pengguna sudah diautentikasi dan tersedia di request.user
+            # Jika pengguna diperlukan, pastikan middleware dan autentikasi sudah diatur.
+            user = request.user 
+            
+            # --- Buat dan Simpan Objek Product ---
+            new_product = Product(
+                user=user,
+                name=name, 
+                price=price,
+                description=description,
+                thumbnail=thumbnail,
+                category=category,
+                is_featured=is_featured,
+            )
+            new_product.save()
+            
+            return JsonResponse({"status": "success", "message": "Product successfully created"}, status=201)
+        
+        except json.JSONDecodeError:
+            return JsonResponse({"status": "error", "message": "Invalid JSON format"}, status=400)
+        except Exception as e:
+            # Penanganan kesalahan umum
+            return JsonResponse({"status": "error", "message": f"An error occurred: {str(e)}"}, status=500)
+            
+    else:
+        return JsonResponse({"status": "error", "message": "Only POST requests are allowed"}, status=405)
+
+def proxy_image(request):
+    image_url = request.GET.get('url')
+    if not image_url:
+        return HttpResponse('No URL provided', status=400)
+    
+    try:
+        # Fetch image from external source
+        response = requests.get(image_url, timeout=10)
+        response.raise_for_status()
+        
+        # Return the image with proper content type
+        return HttpResponse(
+            response.content,
+            content_type=response.headers.get('Content-Type', 'image/jpeg')
+        )
+    except requests.RequestException as e:
+        return HttpResponse(f'Error fetching image: {str(e)}', status=500)
 
 def register(request):
     form = UserCreationForm(request.POST or None)

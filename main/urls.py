@@ -13,6 +13,8 @@ from main.views import (
     edit_product,
     delete_product,
     add_product_entry_ajax,
+    proxy_image,
+    create_product_flutter
 )
 
 app_name = 'main'
@@ -31,5 +33,7 @@ urlpatterns = [
     path('product/<uuid:product_id>', edit_product, name='edit_product'),
     path('news/<uuid:product_id>/delete', delete_product, name='delete_product'),
     path('create-product-ajax', add_product_entry_ajax, name='add_product_entry_ajax'),
+    path('proxy-image/', proxy_image, name='proxy_image'),
+    path('create-product-flutter', create_product_flutter, name='create_product_flutter'),
 
 ]

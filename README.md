@@ -245,5 +245,5 @@ TUGAS 6
 - Lebih interaktif: bisa menampilkan feedback instan (loading spinner, inline validation, toast).
 - Lebih modern & polished: UX terlihat seperti SPA (Single Page App) pada beberapa bagian.
 - Konsistensi state: pengguna tetap berada di satu halaman — navigasi lebih lancar.
-- Risiko: jika tidak di-handle baik, bisa terjadi inconsistent UI (mis. data stale) — solusinya polling, event dispatch, atau update after actions.
+- Risiko: jika tidak di-handle baik, bisa terjadi inconsistent UI (mis. data stale) — solusinya polling, event dispatch, atau update afte   r actions.
 - Aksesibilitas: perlu perhatian (focus management, aria-live untuk notifikasi) agar pengguna screen reader tetap tahu perubahan.
