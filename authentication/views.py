@@ -11,7 +11,7 @@ def logout(request):
     try:
         auth_logout(request)
         return JsonResponse({
-            "user_id": request.user.id, 
+            "id": request.user.pk, 
             "username": username,
             "status": True,
             "message": "Logged out successfully!"
@@ -70,6 +70,7 @@ def login(request):
             auth_login(request, user)
             # Login status successful.
             return JsonResponse({
+                "id": user.pk,
                 "username": user.username,
                 "status": True,
                 "message": "Login successful!"
